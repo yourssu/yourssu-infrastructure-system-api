@@ -1,0 +1,19 @@
+### Define an Ingress to connect with the Service
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: yourssu-infrastructure-api
+  namespace: yourssu-infrastructure-api
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: 'api.yis.yourssu.com'   # hostname to be connected in the Ingress
+      http:
+        paths:
+          - backend:
+              service:
+                name: yourssu-infrastructure-api
+                port:
+                  number: 8080
+            path: /
+            pathType: Prefix

@@ -1,0 +1,19 @@
+### Define an Ingress to connect with the Service
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: game-2048
+  namespace: game-2048
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: 'test.yourssu.com'   # hostname to be connected in the Ingress
+      http:
+        paths:
+          - backend:
+              service:
+                name: game-2048
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix

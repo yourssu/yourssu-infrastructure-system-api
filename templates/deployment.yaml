@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {application_name}
+  namespace: {application_name}
+  labels:
+    app: {application_name}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {application_name}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      name: {application_name}
+      labels:
+        app: {application_name}
+    spec:
+      containers:
+        - name: {application_name}
+          image: {image_url}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: {port}
+          resources:
+            requests:
+              cpu: {cpu_requests}
+              memory: {memory_requests}
+            limits:
+              memory: {cpu_limits}
+              cpu: {memory_limits}
+      restartPolicy: Always

@@ -1,0 +1,10 @@
+fastapi[standard]
+SQLAlchemy
+alembic
+pydantic-settings
+passlib
+bcrypt
+python-jose
+PyGithub
+kubernetes
+pymysql

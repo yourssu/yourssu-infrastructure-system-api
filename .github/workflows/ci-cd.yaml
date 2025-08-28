@@ -1,0 +1,70 @@
+# service-a/.github/workflows/ci-cd.yaml
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: yourssu-app
+  DEPLOYMENT_API_URL: https://your-api-url.com
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+    
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Build with Gradle
+      run: ./gradlew :bootJar
+
+    - name: Decode Dockerfile from secret and save it
+      run: |
+        echo "$DOCKERFILE" > Dockerfile
+      env:
+        DOCKERFILE: ${{ secrets.DOCKERFILE }}
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # Build Docker image
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    - name: Trigger deployment
+      env:
+        IMAGE_URL: ${{ steps.build-image.outputs.image }}
+        API_TOKEN: ${{ secrets.API_TOKEN }}
+        APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
+      run: |
+        curl -X POST "${{ env.DEPLOYMENT_API_URL }}/api/v1/deployments/update-image" \
+          -H "Authorization: Bearer $API_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "application_id": "$APPLICATION_ID",
+            "image_url": "'"$IMAGE_URL"'"
+          }'

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yourssu-infrastructure-api
+  namespace: yourssu-infrastructure-api
+  labels:
+    app: yourssu-infrastructure-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yourssu-infrastructure-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      name: yourssu-infrastructure-api
+      labels:
+        app: yourssu-infrastructure-api
+    spec:
+      containers:
+        - name: yourssu-infrastructure-api
+          image: 590662143928.dkr.ecr.ap-northeast-2.amazonaws.com/yourssu/yis:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 250m       # 100m, 250m, 500m, 1
+              memory: 128Mi # 32Mi, 64Mi, 128Mi, 256Mi, 512Mi, 1Gi, 1.5Gi, 2Gi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+      restartPolicy: Always

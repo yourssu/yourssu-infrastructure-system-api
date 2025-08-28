@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: yourssu-infrastructure-api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yourssu-infrastructure-api
+  namespace: yourssu-infrastructure-api
+spec:
+  selector:
+    app: yourssu-infrastructure-api
+  ports:
+    - protocol: TCP
+      port: 8080           # exposed port number
+      targetPort: 8080      # forwarded port number into application
+  type: LoadBalancer
+---
+### Define an Ingress to connect with the Service
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: yourssu-infrastructure-api
+  namespace: yourssu-infrastructure-api
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api.yis.yourssu.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: yourssu-infrastructure-api
+                port:
+                  number: 8080
+            path: /
+            pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yourssu-infrastructure-api
+  namespace: yourssu-infrastructure-api
+  labels:
+    app: yourssu-infrastructure-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yourssu-infrastructure-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      name: yourssu-infrastructure-api
+      labels:
+        app: yourssu-infrastructure-api
+    spec:
+      containers:
+        - name: yourssu-infrastructure-api
+          image: public.ecr.aws/i7o9j8a3/yourssu/yis:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 250m       # 100m, 250m, 500m, 1
+              memory: 128Mi # 32Mi, 64Mi, 128Mi, 256Mi, 512Mi, 1Gi, 1.5Gi, 2Gi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+      restartPolicy: Always

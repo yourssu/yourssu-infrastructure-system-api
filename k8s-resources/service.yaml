@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: yourssu-infrastructure-api
+  namespace: yourssu-infrastructure-api
+spec:
+  selector:
+    app: yourssu-infrastructure-api
+  ports:
+    - protocol: TCP
+      port: 8080           # exposed port number
+      targetPort: 8080      # forwarded port number into application
+  type: LoadBalancer

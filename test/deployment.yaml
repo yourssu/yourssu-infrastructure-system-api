@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-2048
+  namespace: game-2048
+  labels:
+    app: game-2048
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game-2048
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      name: game-2048
+      labels:
+        app: game-2048
+    spec:
+      containers:
+        - name: game-2048
+          image: alexwhen/docker-2048:latest # docker repository path
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: 32Mi # 32Mi, 64Mi, 128Mi, 256Mi, 512Mi, 1Gi, 1.5Gi, 2Gi
+              cpu: 60m     # 100m, 250m, 500m, 1, 2
+            limits:
+              memory: 32Mi
+              cpu: 60m
+      restartPolicy: Always

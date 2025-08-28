@@ -1,0 +1,33 @@
+# docker compose
+# 파일 경로에서 docker-compose -p yis-api up -d
+version: '3.0'
+
+services:
+  yis_db:
+    image: postgres:16-alpine
+    container_name: yis-db
+    hostname: yis-db
+    networks:
+      - yis_network
+    # 서비스 배포 및 실행 옵션
+    environment:
+      TZ: Asia/Seoul
+      POSTGRES_USER: yourssu
+      POSTGRES_PASSWORD: yourssu
+    # 컨테이너 상태 체크
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    volumes:
+      - yis_db_volume:/var/lib/postgresql/data
+      - ./init-database/yis.sql:/docker-entrypoint-initdb.d/yis.sql
+
+# 도커 볼륨
+volumes:
+  yis_db_volume:
+
+networks:
+  yis_network:
+    driver: bridge
