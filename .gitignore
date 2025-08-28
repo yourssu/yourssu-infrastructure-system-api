@@ -1,0 +1,4 @@
+./app/.env
+./app/alembic/
+./app/alembic.ini
+./yis-api/
